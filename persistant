@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import subprocess, re, datetime
+import subprocess, re, datetime, pickle
 import RSyncBackup
 
 from subprocess import Popen
@@ -18,7 +18,11 @@ targets = [
     }
 ]
 
-missed_backups = []
+try:
+    missed_backups = pickle.load(open('missed.p', 'rb'))
+    print(missed_backups)
+except Exception:
+    missed_backups = []
 
 def is_host_up(ip):
     ping_response = Popen(["/bin/ping", "-c1", "-w1", "-q", ip], stdout=subprocess.PIPE).stdout.read()
@@ -26,7 +30,7 @@ def is_host_up(ip):
 
 def backup_host(target):
     backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync', lastRunFile='backup.lrf')
-    backup.backup(source=target['source'], destination=target['destination'])
+    backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'])
     backup.finish()
 
 def persistant_backup():
@@ -36,13 +40,15 @@ def persistant_backup():
             backup_host(target)
         else:
             persisted_backups.append(target)
-    missed_backups = persistant_backup
+    pickle.dump(persisted_backups, open('missed.p', 'wb'))
 
 def daily_backup():
+    missed_backups = []
     for target in targets:
         if is_host_up(target['ip']):
             backup_host(target)
         else:
-            persisted_backups.append(target)
+            missed_backups.append(target)
+    pickle.dump(missed_backups, open('missed.p', 'wb'))
 
-daily_backup()
+persistant_backup()
