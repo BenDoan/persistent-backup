@@ -1,10 +1,5 @@
 Manages persistant backups for mobile devices like laptops and cell phones that cannot be realiably backed up on a set schedule.
 
-Caveats
-=======
-* The script has only been tested on schedules with 5 classes and 4 semesters
-* May not work with all versions of Inifinite Campus
-
 USAGE
 =====
 ```
