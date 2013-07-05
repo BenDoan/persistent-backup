@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-import subprocess
-import re
+import argparse
 import datetime
 import pickle
-import argparse
+import re
+import subprocess
 
 from subprocess import Popen
 
@@ -24,7 +24,7 @@ try:
     missed_backups = pickle.load(open('missed.p', 'rb'))
     if args.verbose:
         print(missed_backups)
-except Exception:
+except FileNotFoundError:
     missed_backups = []
 
 def is_host_up(ip):
