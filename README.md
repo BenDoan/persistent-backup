@@ -1,5 +1,11 @@
 Manages persistant backups for mobile devices like laptops and cell phones that cannot be realiably backed up on a set schedule.
 
+INSTALL
+======
+- Add the hosts to be backed up to the targets.py file
+- Add rsa keys to the remote hosts to allow passwordless login
+- Manually select yes when you connect to a new host
+
 USAGE
 =====
 ```
