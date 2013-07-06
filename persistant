@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import argparse
 import datetime
 import pickle
@@ -35,9 +36,11 @@ def backup_host(target, type):
     backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync -ab')
 
     if type == 'new':
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second))
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'],
+                        destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second))
     if type == 'incremental':
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + 'full_backup')
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'],
+                        destination=target['destination'] + 'full_backup')
     backup.finish()
 
 def persistant_backup(type):
@@ -57,6 +60,7 @@ def daily_backup(type):
         else:
             missed_backups.append(target)
     pickle.dump(missed_backups, open('missed.p', 'wb'))
+
 
 if args.daily:
     if args.incremental:
