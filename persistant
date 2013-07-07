@@ -25,7 +25,7 @@ try:
     missed_backups = pickle.load(open('missed.p', 'rb'))
     if args.verbose:
         print(missed_backups)
-except FileNotFoundError:
+except Exception:
     missed_backups = []
 
 def is_host_up(ip):
