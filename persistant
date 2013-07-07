@@ -33,7 +33,7 @@ def is_host_up(ip):
     return re.search(b"100% packet loss", ping_response) is None
 
 def backup_host(target, type):
-    backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync -ab')
+    backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync -ab', lastRunFile='backup.lrf')
 
     if type == 'new':
         backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'],
