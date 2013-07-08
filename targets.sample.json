@@ -1,0 +1,20 @@
+[
+    {
+        "user" : "ben",
+        "ip" : "192.168.1.4",
+        "destination" : "/home/ben/code/persistant-backup/backup/",
+        "source" : "/home/ben/code/persistant-backup/docs/",
+        "exclude" : [
+                        "large_file.exe"
+                    ]
+    },
+    {
+        "user" : "ben",
+        "ip" : "192.168.1.4",
+        "destination" : "/home/ben/code/persistant-backup/backup/",
+        "source" : "/home/ben/code/persistant-backup/docs2/",
+        "exclude" : [
+                        "large_file.exe"
+                    ]
+    }
+]

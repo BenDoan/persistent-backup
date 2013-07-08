@@ -1,6 +1,7 @@
 *.pyc
 backup/
 docs/
+docs2/
 missed.p
-targets.py
 backup.lrf
+targets.json
