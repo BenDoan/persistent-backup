@@ -18,9 +18,20 @@ parser.add_argument('-p', '--persist', dest='persist', action='store_true', help
 parser.add_argument('-i', '--incremental', dest='incremental', action='store_true', help='performs an incremental backup instead of a new backup')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='explains what is being done')
 parser.add_argument('-t', '--test', dest='test', action='store_true', help='runs rsync in test mode')
+parser.add_argument('--ping', dest='ping_path', action='store', type=str, help='specify a path for ping, default:"/bin/ping"')
+parser.add_argument('--rsync', dest='rsync_path', action='store', type=str, help='specify a path for rsync, default:"/usr/bin/rsync"')
 
 args = parser.parse_args()
 
+if args.ping_path:
+    ping_path = args.ping_path
+else:
+    ping_path = "/bin/ping"
+
+if args.rsync_path:
+    rsync_path = args.rsync_path
+else:
+    rsync_path = "/usr/bin/rsync"
 
 try:
     missed_backups = pickle.load(open('missed.p', 'rb'))
@@ -32,12 +43,11 @@ except Exception:
 
 def get_targets(name):
     '''reads and parses the json targets file and returns its contents '''
-    json_data = open(name)
-    return json.load(json_data)
+    return json.load(open(name))
 
 def is_host_up(ip):
     '''pings the specified ip to see if it is up'''
-    ping_response = Popen(["/bin/ping", "-c1", "-w1", "-q", ip], stdout=subprocess.PIPE).stdout.read()
+    ping_response = Popen([ping_path, "-c1", "-w1", "-q", ip], stdout=subprocess.PIPE).stdout.read()
     return re.search(b"100% packet loss", ping_response) is None
 
 def backup_host(target, type):
@@ -51,9 +61,9 @@ def backup_host(target, type):
 
     now = datetime.datetime.now()
     if args.test:
-        backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync ' + arguments, lastRunFile='backup.lrf', testRun=1)
+        backup = RSyncBackup.RSyncBackup(rsync=rsync_path + ' ' + arguments, lastRunFile='backup.lrf', testRun=1)
     else:
-        backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync ' + arguments, lastRunFile='backup.lrf')
+        backup = RSyncBackup.RSyncBackup(rsync=rsync_path + ' ' + arguments, lastRunFile='backup.lrf')
 
     if type == 'new':
         backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'])

@@ -2,29 +2,38 @@ Manages persistant backups for mobile devices like laptops and cell phones that 
 
 REQUIREMENTS
 ============
-- *nix based operating system
-- ping installed at '/bin/ping'
-- RSync installed at '/usr/bin/rsync'
+- *nix based operating system (only tested on linux)
+- ping and rsync installed
+
 
 INSTALL
 ======
 - Add the hosts to be backed up to the targets.py file
-- Add rsa keys to the remote hosts to allow passwordless login
+- Add rsa keys to the remote hosts to allow for passwordless login
 - Manually select yes when you connect to a new host
+
+PERSISTANT BACKUPS
+==================
+- Use cron to call the daily backup (persisant -d) once a day
+- Use cron to call the persist backup (persistant -p) every 10 minutes
 
 USAGE
 =====
 ```
-usage: persistant [-h] [-d] [-p] [-i] [-v]
+usage: persistant [-h] [-d] [-p] [-i] [-v] [-t] [--ping PING_PATH]
+                  [--rsync RSYNC_PATH]
 
 Backup remote files.
 
 optional arguments:
-  -h, --help         show this help message and exit
-  -d, --daily        creates a new daily backup
-  -p, --persist      tries to perform missed backups
-  -i, --incremental  performs an incremental backup instead of a new backup
-  -v, --verbose      explains what is being done
+  -h, --help          show this help message and exit
+  -d, --daily         creates a new daily backup
+  -p, --persist       tries to perform missed backups
+  -i, --incremental   performs an incremental backup instead of a new backup
+  -v, --verbose       explains what is being done
+  -t, --test          runs rsync in test mode
+  --ping PING_PATH    specify a path for ping, default:"/bin/ping"
+  --rsync RSYNC_PATH  specify a path for rsync, default:"/usr/bin/rsync"
 ```
 
 LICENSE
