@@ -6,6 +6,7 @@ import json
 import pickle
 import re
 import subprocess
+import time
 
 from subprocess import Popen
 
@@ -16,6 +17,7 @@ parser.add_argument('-d', '--daily', dest='daily', action='store_true', help='cr
 parser.add_argument('-p', '--persist', dest='persist', action='store_true', help='tries to perform missed backups')
 parser.add_argument('-i', '--incremental', dest='incremental', action='store_true', help='performs an incremental backup instead of a new backup')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='explains what is being done')
+parser.add_argument('-t', '--test', dest='test', action='store_true', help='runs rsync in test mode')
 
 args = parser.parse_args()
 
@@ -48,14 +50,17 @@ def backup_host(target, type):
         arguments = '-ab'
 
     now = datetime.datetime.now()
-    backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync ' + arguments, lastRunFile='backup.lrf')
+    if args.test:
+        backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync ' + arguments, lastRunFile='backup.lrf', testRun=1)
+    else:
+        backup = RSyncBackup.RSyncBackup(rsync='/usr/bin/rsync ' + arguments, lastRunFile='backup.lrf')
 
     if type == 'new':
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'],
-                        destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'])
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'])
+
     if type == 'incremental':
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'],
-                        destination=target['destination'] + 'full_backup', excludeList=target['exclude'])
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + 'full_backup', excludeList=target['exclude'])
+
     backup.finish()
 
 def persistant_backup(type):
@@ -76,6 +81,7 @@ def daily_backup(type):
             backup_host(target, type)
         else:
             missed_backups.append(target)
+        time.sleep(5)
     pickle.dump(missed_backups, open('missed.p', 'wb'))
 
 
