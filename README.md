@@ -36,6 +36,11 @@ optional arguments:
   --rsync RSYNC_PATH  specify a path for rsync, default:"/usr/bin/rsync"
 ```
 
+TODO
+====
+- support for archiving directories
+- support for deleting old backups
+
 LICENSE
 =======
 ```
