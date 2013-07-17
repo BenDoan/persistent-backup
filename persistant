@@ -66,7 +66,7 @@ def backup_host(target, type):
         backup = RSyncBackup.RSyncBackup(rsync=rsync_path + ' ' + arguments, lastRunFile='backup.lrf')
 
     if type == 'new':
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'])
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'], debug=args.verbose)
 
     if type == 'incremental':
         dest = target['destination']
@@ -75,7 +75,7 @@ def backup_host(target, type):
         else:
             dest += '/full_backup'
 
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=dest, excludeList=target['exclude'])
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=dest, excludeList=target['exclude'], debug=args.verbose)
 
     backup.finish()
 
