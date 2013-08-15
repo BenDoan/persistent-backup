@@ -14,8 +14,6 @@ from subprocess import Popen
 import RSyncBackup
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description='Backup remote files.')
 parser.add_argument('-d', '--daily', dest='daily', action='store_true', help='creates a new daily backup')
@@ -27,6 +25,12 @@ parser.add_argument('--ping', dest='ping_path', action='store', type=str, help='
 parser.add_argument('--rsync', dest='rsync_path', action='store', type=str, help='specify a path for rsync, default:"/usr/bin/rsync"')
 
 args = parser.parse_args()
+
+if args.verbose:
+    logging.basicConfig(level=logging.INFO)
+else:
+    logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger("Persistant")
 
 if args.ping_path:
     ping_path = args.ping_path
@@ -40,9 +44,7 @@ else:
 
 try:
     missed_backups = pickle.load(open('missed.p', 'rb'))
-    if args.verbose:
-        print("missed backups : ", end="")
-        print(missed_backups)
+    logger.info("missed backups: {}".format(missed_backups))
 except Exception:
     missed_backups = []
 
@@ -58,11 +60,8 @@ def is_host_up(ip):
 def backup_host(target, type):
     '''backs up the specified host using rsync'''
     arguments = '-ab'
-    if args.verbose:
-        arguments += ' --progress'
-        print('backing up {}@{}:{} to {}'.format(target['user'], target['ip'], target['source'], target['destination']))
-        print("excluding: ", end="")
-        print(target['exclude'])
+    logger.info('backing up {}@{}:{} to {}'.format(target['user'], target['ip'], target['source'], target['destination']))
+    logger.info("excluding: {}".format(target['exclude']))
 
     now = datetime.datetime.now()
     if args.test:
@@ -71,7 +70,7 @@ def backup_host(target, type):
         backup = RSyncBackup.RSyncBackup(rsync=rsync_path + ' ' + arguments, lastRunFile='backup.lrf')
 
     if type == 'new':
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'], debug=args.verbose)
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'])
 
     if type == 'incremental':
         dest = target['destination']
@@ -80,7 +79,7 @@ def backup_host(target, type):
         else:
             dest += '/full_backup'
 
-        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=dest, excludeList=target['exclude'], debug=args.verbose)
+        backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=dest, excludeList=target['exclude'])
 
     backup.finish()
 
@@ -91,7 +90,7 @@ def persistant_backup(type):
         if is_host_up(target['ip']):
             backup_host(target, type)
         else:
-            print('host {} is not up'.format(target['ip']))
+            logger.warn('host {} is not up'.format(target['ip']))
             persisted_backups.append(target)
     pickle.dump(persisted_backups, open('missed.p', 'wb'))
 
@@ -102,14 +101,14 @@ def daily_backup(type):
         if is_host_up(target['ip']):
             backup_host(target, type)
         else:
-            print('host {} is not up'.format(target['ip']))
+            logger.warn('host {} is not up'.format(target['ip']))
             missed_backups.append(target)
         time.sleep(5)
     pickle.dump(missed_backups, open('missed.p', 'wb'))
 
 
 if not (args.daily or args.persist):
-    print('You need to provide at least one argument')
+    logger.error('You need to provide at least one argument')
 else:
     targets = get_targets('targets.json')
 

@@ -34,6 +34,7 @@
 __version__ = "1.3"
 
 import time, subprocess, re
+import logging
 import os, os.path
 
 class RSyncBackup:
@@ -48,6 +49,7 @@ class RSyncBackup:
             rsync       - Specify the location of the rsync binary
             testRun     - Set to 1 to log out what will be done, rather than doing it.
         """
+        self.logger = logging.getLogger("Persistant")
         self.lastRunFile = lastRunFile
         self.rsync = rsync
         self.testRun = testRun
@@ -109,10 +111,7 @@ class RSyncBackup:
             result = subprocess.getstatusoutput (cmnd)
             if (result[0]  != 0):
                 return 0
-            if debug:
-                print("RSync Output:\n")
-                print(result[1])
-                print("\n")
+            self.logger.info("RSync Output:\n {} \n".format(result[1]))
         return 1
 
     def trimArchives (self, archiveDir, filter=None, entriesToKeep=10, removeParentIfEmpty=1):
