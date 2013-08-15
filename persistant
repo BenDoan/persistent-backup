@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import json
+import logging
 import pickle
 import re
 import subprocess
@@ -11,6 +12,10 @@ import time
 from subprocess import Popen
 
 import RSyncBackup
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description='Backup remote files.')
 parser.add_argument('-d', '--daily', dest='daily', action='store_true', help='creates a new daily backup')
@@ -86,6 +91,7 @@ def persistant_backup(type):
         if is_host_up(target['ip']):
             backup_host(target, type)
         else:
+            print('host {} is not up'.format(target['ip']))
             persisted_backups.append(target)
     pickle.dump(persisted_backups, open('missed.p', 'wb'))
 
