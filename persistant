@@ -13,8 +13,6 @@ from subprocess import Popen
 
 import RSyncBackup
 
-
-
 parser = argparse.ArgumentParser(description='Backup remote files.')
 parser.add_argument('-d', '--daily', dest='daily', action='store_true', help='creates a new daily backup')
 parser.add_argument('-p', '--persist', dest='persist', action='store_true', help='tries to perform missed backups')
@@ -26,11 +24,22 @@ parser.add_argument('--rsync', dest='rsync_path', action='store', type=str, help
 
 args = parser.parse_args()
 
+FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+
 if args.verbose:
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format=FORMAT)
 else:
-    logging.basicConfig(level=logging.WARNING)
+    logging.basicConfig(level=logging.WARNING, format=FORMAT)
+
 logger = logging.getLogger("Persistant")
+
+handler = logging.FileHandler('persistant.log')
+handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter(FORMAT)
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
 
 if args.ping_path:
     ping_path = args.ping_path
