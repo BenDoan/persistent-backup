@@ -1,5 +1,25 @@
 #!/usr/bin/env python3
 
+"""
+Persistantly backs up mobile devices over the network.
+
+Usage:
+    persistant (retry|new) [options]
+
+Options:
+    -i, --incremental           performs an incremental backup instead of a full backup
+    -v, --verbose               increase verbosity
+    -t FILE, --targets FILE     manually specify a targets file
+    --silent                    silences any ouput
+    --ping                      specify a path for ping
+    --rsync                     specify a path for rsync
+"""
+
+import os
+import sys
+SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, SCRIPT_PATH + "/libs") #adds the libs folder to the import path
+
 import argparse
 import datetime
 import json
@@ -11,55 +31,51 @@ import time
 
 from subprocess import Popen
 
+from docopt import docopt
 import RSyncBackup
 
-parser = argparse.ArgumentParser(description='Backup remote files.')
-parser.add_argument('-d', '--daily', dest='daily', action='store_true', help='creates a new daily backup')
-parser.add_argument('-p', '--persist', dest='persist', action='store_true', help='tries to perform missed backups')
-parser.add_argument('-i', '--incremental', dest='incremental', action='store_true', help='performs an incremental backup instead of a new backup')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='explains what is being done')
-parser.add_argument('-t', '--test', dest='test', action='store_true', help='runs rsync in test mode')
-parser.add_argument('--ping', dest='ping_path', action='store', type=str, help='specify a path for ping, default:"/bin/ping"')
-parser.add_argument('--rsync', dest='rsync_path', action='store', type=str, help='specify a path for rsync, default:"/usr/bin/rsync"')
 
-args = parser.parse_args()
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
 
-FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+if __name__ == '__main__':
+    args = docopt(__doc__)
 
-if args.verbose:
-    logging.basicConfig(level=logging.INFO, format=FORMAT)
+if args['--verbose']:
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+elif args['--silent']:
+    logging.basicConfig(level=logging.CRITICAL, format=LOG_FORMAT)
 else:
-    logging.basicConfig(level=logging.WARNING, format=FORMAT)
+    logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
 
+#setup logging
 logger = logging.getLogger("Persistant")
-
-handler = logging.FileHandler('persistant.log')
+handler = logging.FileHandler(SCRIPT_PATH + '/persistant.log')
 handler.setLevel(logging.INFO)
-
-formatter = logging.Formatter(FORMAT)
+formatter = logging.Formatter(LOG_FORMAT)
 handler.setFormatter(formatter)
-
 logger.addHandler(handler)
 
-if args.ping_path:
-    ping_path = args.ping_path
+#specify ping and rsync paths
+if args['--ping']:
+    ping_path = args['--ping']
 else:
     ping_path = "/bin/ping"
 
-if args.rsync_path:
-    rsync_path = args.rsync_path
+if args['--rsync']:
+    rsync_path = args['--rsync']
 else:
     rsync_path = "/usr/bin/rsync"
 
+#load the dictionary of missed backups
 try:
-    missed_backups = pickle.load(open('missed.p', 'rb'))
+    missed_backups = pickle.load(open(SCRIPT_PATH + '/missed.p', 'rb'))
     logger.info("missed backups: {}".format(missed_backups))
 except Exception:
     missed_backups = []
 
 def get_targets(name):
     '''reads and parses the json targets file and returns its contents '''
-    return json.load(open(name))
+    return json.load(open(SCRIPT_PATH + "/" + name))
 
 def is_host_up(ip):
     '''pings the specified ip to see if it is up'''
@@ -73,10 +89,7 @@ def backup_host(target, type):
     logger.info("excluding: {}".format(target['exclude']))
 
     now = datetime.datetime.now()
-    if args.test:
-        backup = RSyncBackup.RSyncBackup(rsync=rsync_path + ' ' + arguments, lastRunFile='backup.lrf', testRun=1)
-    else:
-        backup = RSyncBackup.RSyncBackup(rsync=rsync_path + ' ' + arguments, lastRunFile='backup.lrf')
+    backup = RSyncBackup.RSyncBackup(rsync=rsync_path + ' ' + arguments, lastRunFile='backup.lrf')
 
     if type == 'new':
         backup.backup(source=target['user'] + "@" + target['ip'] + ":" + target['source'], destination=target['destination'] + "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second), excludeList=target['exclude'])
@@ -92,7 +105,7 @@ def backup_host(target, type):
 
     backup.finish()
 
-def persistant_backup(type):
+def retry_backup(type):
     '''attempts to complete failed backups'''
     persisted_backups = []
     for target in missed_backups:
@@ -101,10 +114,10 @@ def persistant_backup(type):
         else:
             logger.warn('host {} is not up'.format(target['ip']))
             persisted_backups.append(target)
-    pickle.dump(persisted_backups, open('missed.p', 'wb'))
+    pickle.dump(persisted_backups, open(SCRIPT_PATH + '/missed.p', 'wb'))
 
-def daily_backup(type):
-    '''performs a new daily backup'''
+def new_backup(type):
+    '''performs a new backup'''
     missed_backups = []
     for target in targets:
         if is_host_up(target['ip']):
@@ -113,22 +126,19 @@ def daily_backup(type):
             logger.warn('host {} is not up'.format(target['ip']))
             missed_backups.append(target)
         time.sleep(5)
-    pickle.dump(missed_backups, open('missed.p', 'wb'))
+    pickle.dump(missed_backups, open(SCRIPT_PATH + '/missed.p', 'wb'))
 
 
-if not (args.daily or args.persist):
-    logger.error('You need to provide at least one argument')
-else:
-    targets = get_targets('targets.json')
+targets = get_targets('targets.json')
 
-if args.daily:
-    if args.incremental:
-        daily_backup('incremental')
+if args['new']:
+    if args['--incremental']:
+        new_backup('incremental')
     else:
-        daily_backup('new')
+        new_backup('new')
 
-if args.persist:
-    if args.incremental:
-        persistant_backup('incremental')
+if args['retry']:
+    if args['--incremental']:
+        retry_backup('incremental')
     else:
-        persistant_backup('new')
+        retry_backup('new')

@@ -10,36 +10,35 @@ INSTALL
 ======
 - Add the hosts to be backed up to the targets.py file
 - Add rsa keys to the remote hosts to allow for passwordless login
-- Manually select yes when you connect to a new host
+- Manually select yes when you first connect to a new host
 
 PERSISTANT BACKUPS
 ==================
-- Use cron to call the daily backup (persisant -d) once a day
-- Use cron to call the persist backup (persistant -p) every 10 minutes
+- Use cron to call a new backup (persisant new) once a day
+- Use cron to retry the backup (persistant retry) every 10 minutes
 
 USAGE
 =====
 ```
-usage: persistant [-h] [-d] [-p] [-i] [-v] [-t] [--ping PING_PATH]
-                  [--rsync RSYNC_PATH]
+Usage:
+    persistant (retry|new) [options]
 
-Backup remote files.
-
-optional arguments:
-  -h, --help          show this help message and exit
-  -d, --daily         creates a new daily backup
-  -p, --persist       tries to perform missed backups
-  -i, --incremental   performs an incremental backup instead of a new backup
-  -v, --verbose       explains what is being done
-  -t, --test          runs rsync in test mode
-  --ping PING_PATH    specify a path for ping, default:"/bin/ping"
-  --rsync RSYNC_PATH  specify a path for rsync, default:"/usr/bin/rsync"
+Options:
+    -i, --incremental           performs an incremental backup instead of a full backup
+    -v, --verbose               increase verbosity
+    -t FILE, --targets FILE     manually specify a targets file
+    --silent                    silences any ouput
+    --ping                      specify a path for ping
+    --rsync                     specify a path for rsync
 ```
 
 TODO
 ====
 - support for archiving directories
 - support for deleting old backups
+- email notifications
+- better logging of rsync progress
+- implement a better method for checking if hosts are up
 
 LICENSE
 =======
