@@ -11,8 +11,8 @@ Options:
     -v, --verbose               increase verbosity
     -t FILE, --targets FILE     manually specify a targets file
     --silent                    silences any ouput
-    --ping                      specify a path for ping
-    --rsync                     specify a path for rsync
+    --ping FILE                 specify a path for ping
+    --rsync FILE                specify a path for rsync
 """
 
 import os
