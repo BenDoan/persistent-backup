@@ -1,4 +1,4 @@
-Manages persistant backups for mobile devices like laptops and cell phones that cannot be realiably backed up on a set schedule.
+Manages persistent backups for mobile devices like laptops and cell phones that cannot be realiably backed up on a set schedule.
 
 REQUIREMENTS
 ============
@@ -12,7 +12,7 @@ INSTALL
 - Add rsa keys to the remote hosts to allow for passwordless login
 - Manually select yes when you first connect to a new host
 
-PERSISTANT BACKUPS
+PERSISTENT BACKUPS
 ==================
 - Use cron to call a new backup (persisant new) once a day
 - Use cron to retry the backup (persistant retry) every 10 minutes
