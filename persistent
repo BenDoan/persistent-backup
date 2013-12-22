@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 """
-Persistantly backs up mobile devices over the network.
+Persistently backs up mobile devices over the network.
 
 Usage:
-    persistant (retry|new) [options]
+    persistent (retry|new) [options]
 
 Options:
     -i, --incremental           performs an incremental backup instead of a full backup
@@ -48,8 +48,8 @@ else:
     logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
 
 #setup logging
-logger = logging.getLogger("Persistant")
-handler = logging.FileHandler(SCRIPT_PATH + '/persistant.log')
+logger = logging.getLogger("Persistent")
+handler = logging.FileHandler(SCRIPT_PATH + '/persistent.log')
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter(LOG_FORMAT)
 handler.setFormatter(formatter)
