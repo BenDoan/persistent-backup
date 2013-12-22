@@ -79,8 +79,7 @@ def get_targets(name):
 
 def is_host_up(ip):
     '''pings the specified ip to see if it is up'''
-    ping_response = Popen([ping_path, "-c1", "-w1", "-q", ip], stdout=subprocess.PIPE).stdout.read()
-    return re.search(b"100% packet loss", ping_response) is None
+    return subprocess.getstatusoutput("ssh -q {} exit".format(ip))[0] == 0
 
 def backup_host(target, type):
     '''backs up the specified host using rsync'''
