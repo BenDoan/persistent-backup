@@ -8,8 +8,8 @@ REQUIREMENTS
 
 INSTALL
 ======
-- Add the hosts to be backed up to the targets.py file
-- Add rsa keys to the remote hosts to allow for passwordless login
+- Add the hosts to be backed up to the targets.json file
+- Add rsa keys for remote hosts to allow for passwordless login
 - Manually select yes when you first connect to a new host
 
 PERSISTENT BACKUPS
