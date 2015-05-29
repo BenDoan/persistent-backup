@@ -124,7 +124,7 @@ def new_backup(type):
         else:
             logger.warn('host {} is not up'.format(target['ip']))
             missed_backups.append(target)
-        time.sleep(5)
+        time.sleep(3)
     pickle.dump(missed_backups, open(SCRIPT_PATH + '/missed.p', 'wb'))
 
 
